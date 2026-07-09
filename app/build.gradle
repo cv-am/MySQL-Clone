@@ -1,0 +1,18 @@
+plugins {
+        id 'com.android.application'
+        }
+
+        android {
+            namespace 'com.yourdomain.sqliteclone'
+                compileSdk 34
+
+                    defaultConfig {
+                            applicationId "com.yourdomain.sqliteclone"
+                                    minSdk 24
+                                            targetSdk 34
+                                                    versionCode 1
+                                                            versionName "1.0"
+                                                                }
+                                                                }
+                                                                
+}
