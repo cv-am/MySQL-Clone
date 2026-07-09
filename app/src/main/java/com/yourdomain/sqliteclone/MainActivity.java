@@ -63,7 +63,6 @@ public class MainActivity extends Activity {
         });
 
         exportButton.setOnClickListener(v -> {
-            // Opens the native Android file picker to save a document
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("application/octet-stream");
@@ -72,7 +71,6 @@ public class MainActivity extends Activity {
         });
     }
 
-    // This catches the result after the user picks a folder to save the file
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -93,21 +91,18 @@ public class MainActivity extends Activity {
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                 SQLiteDatabase db = dbEngine.getReadableDatabase();
                 
-                // 1. Get all user tables
                 Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('android_metadata', 'sqlite_sequence')", null);
                 
                 while (cursor.moveToNext()) {
                     String tableName = cursor.getString(0);
                     writer.write("-- Backup for table: " + tableName + "\n");
                     
-                    // 2. Export CREATE statement
                     Cursor createCursor = db.rawQuery("SELECT sql FROM sqlite_master WHERE type='table' AND name='" + tableName + "'", null);
                     if (createCursor.moveToFirst()) {
                         writer.write(createCursor.getString(0) + ";\n\n");
                     }
                     createCursor.close();
                     
-                    // 3. Export Data as INSERT statements
                     Cursor dataCursor = db.rawQuery("SELECT * FROM " + tableName, null);
                     String[] columns = dataCursor.getColumnNames();
                     
@@ -118,7 +113,6 @@ public class MainActivity extends Activity {
                             if (val == null) {
                                 insert.append("NULL");
                             } else {
-                                // Escape single quotes for valid SQL
                                 insert.append("'").append(val.replace("'", "''")).append("'");
                             }
                             if (i < columns.length - 1) insert.append(", ");
@@ -134,7 +128,7 @@ public class MainActivity extends Activity {
                 writer.close();
                 
                 runOnUiThread(() -> {
-                    outputText.setText("Success: Database exported to " + uri.getLastPathSegment());
+                    outputText.setText("Success: Database exported successfully!");
                     outputText.setTextColor(Color.parseColor("#006400"));
                 });
                 
@@ -160,9 +154,13 @@ public class MainActivity extends Activity {
             } finally {
                 db.close();
             }
+            
+            // THE FIX: Java lambdas require variables to be "effectively final"
+            final String finalResultMsg = resultMsg;
+            
             runOnUiThread(() -> {
-                outputText.setText(resultMsg);
-                outputText.setTextColor(resultMsg.startsWith("Error") ? Color.RED : Color.parseColor("#006400"));
+                outputText.setText(finalResultMsg);
+                outputText.setTextColor(finalResultMsg.startsWith("Error") ? Color.RED : Color.parseColor("#006400"));
             });
         });
     }
