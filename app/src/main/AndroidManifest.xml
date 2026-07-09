@@ -8,7 +8,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
-        android:label="MySQL Clone"
+        android:label="Shivam's MySQL🌸🌹"
         android:theme="@android:style/Theme.DeviceDefault.Light">
         
         <activity android:name=".MainActivity" android:exported="true">
