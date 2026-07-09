@@ -1,5 +1,3 @@
-rootProject.name = "MySQLClone"
-include ':app'
 pluginManagement {
     repositories {
         google()
