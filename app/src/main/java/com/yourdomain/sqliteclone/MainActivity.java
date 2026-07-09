@@ -17,7 +17,10 @@ import android.widget.TextView;
 
 import com.yourdomain.sqliteclone.db.LocalDBEngine;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +35,7 @@ public class MainActivity extends Activity {
     private TableLayout tableLayout;
     
     private static final int EXPORT_REQUEST_CODE = 101;
+    private static final int IMPORT_REQUEST_CODE = 102;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +50,7 @@ public class MainActivity extends Activity {
         tableLayout = findViewById(R.id.tableLayout);
         Button runButton = findViewById(R.id.runButton);
         Button exportButton = findViewById(R.id.exportButton);
+        Button importButton = findViewById(R.id.importButton);
 
         runButton.setOnClickListener(v -> {
             String rawSql = sqlInput.getText().toString().trim();
@@ -69,17 +74,76 @@ public class MainActivity extends Activity {
             intent.putExtra(Intent.EXTRA_TITLE, "mysql_backup.sql");
             startActivityForResult(intent, EXPORT_REQUEST_CODE);
         });
+
+        importButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*"); // Allow any file type to be picked
+            startActivityForResult(intent, IMPORT_REQUEST_CODE);
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == EXPORT_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            if (data != null && data.getData() != null) {
+        if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+            if (requestCode == EXPORT_REQUEST_CODE) {
                 outputText.setText("Exporting database...");
                 exportDatabaseToUri(data.getData());
+            } else if (requestCode == IMPORT_REQUEST_CODE) {
+                outputText.setText("Importing database...");
+                importDatabaseFromUri(data.getData());
             }
         }
+    }
+
+    private void importDatabaseFromUri(Uri uri) {
+        executorService.execute(() -> {
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(uri);
+                if (inputStream == null) return;
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder sqlBuilder = new StringBuilder();
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    // Ignore SQL comments and empty lines
+                    if (line.trim().startsWith("--") || line.trim().isEmpty()) continue;
+                    sqlBuilder.append(line).append(" ");
+                }
+                reader.close();
+
+                // Split the whole file by semicolons into individual commands
+                String[] sqlCommands = sqlBuilder.toString().split(";");
+                SQLiteDatabase db = dbEngine.getWritableDatabase();
+
+                // Use a transaction for massive speed improvements on large imports
+                db.beginTransaction();
+                try {
+                    for (String command : sqlCommands) {
+                        if (!command.trim().isEmpty()) {
+                            db.execSQL(command);
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+
+                runOnUiThread(() -> {
+                    outputText.setText("Success: Database imported!");
+                    outputText.setTextColor(Color.parseColor("#006400"));
+                });
+
+            } catch (Exception e) {
+                String error = "Import failed: " + e.getMessage();
+                runOnUiThread(() -> {
+                    outputText.setText(error);
+                    outputText.setTextColor(Color.RED);
+                });
+            }
+        });
     }
 
     private void exportDatabaseToUri(Uri uri) {
@@ -151,13 +215,9 @@ public class MainActivity extends Activity {
                 resultMsg = "Success: Command executed without errors.";
             } catch (SQLException e) {
                 resultMsg = "Error: " + e.getMessage();
-            } finally {
-                db.close();
             }
             
-            // THE FIX: Java lambdas require variables to be "effectively final"
             final String finalResultMsg = resultMsg;
-            
             runOnUiThread(() -> {
                 outputText.setText(finalResultMsg);
                 outputText.setTextColor(finalResultMsg.startsWith("Error") ? Color.RED : Color.parseColor("#006400"));
