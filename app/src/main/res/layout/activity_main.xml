@@ -4,82 +4,48 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#F8F9FA">
+    android:background="@drawable/bg_gradient">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="MySQL Clone Engine"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
-        android:layout_marginBottom="16dp"/>
-
-    <EditText
+    <MultiAutoCompleteTextView
         android:id="@+id/sqlInput"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:background="#FFFFFF"
+        android:layout_height="140dp"
+        android:background="@drawable/glass_card"
         android:gravity="top|start"
-        android:hint="SELECT * FROM test;"
+        android:hint="Type SQL here... (e.g. SELECT * FROM)"
+        android:textColorHint="#99FFFFFF"
         android:inputType="textMultiLine|textNoSuggestions"
-        android:padding="12dp"
-        android:textColor="#000000"
-        android:textSize="16sp" />
+        android:padding="16dp"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" 
+        android:completionThreshold="1"/>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/runButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="12dp"
-        android:weightSum="3">
-        
-        <Button
-            android:id="@+id/runButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="60dp"
-            android:layout_marginEnd="4dp"
-            android:text="Run"
-            android:textSize="14sp"
-            android:backgroundTint="#007BFF"
-            android:textColor="#FFFFFF"/>
-
-        <Button
-            android:id="@+id/exportButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="60dp"
-            android:layout_marginEnd="4dp"
-            android:text="Export"
-            android:textSize="14sp"
-            android:backgroundTint="#28A745"
-            android:textColor="#FFFFFF"/>
-
-        <Button
-            android:id="@+id/importButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="60dp"
-            android:text="Import"
-            android:textSize="14sp"
-            android:backgroundTint="#FFC107"
-            android:textColor="#000000"/>
-    </LinearLayout>
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:text="Execute Query"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:backgroundTint="#00C9FF"
+        android:textColor="#000000"/>
 
     <TextView
         android:id="@+id/outputText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="#555555"
+        android:layout_marginTop="12dp"
+        android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:textStyle="bold"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="12dp"
+        android:background="@drawable/glass_card"
+        android:padding="8dp">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -89,7 +55,6 @@
                 android:id="@+id/tableLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#DDDDDD"
                 android:stretchColumns="*">
             </TableLayout>
 
